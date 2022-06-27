@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redirect;
 
-class AuthController extends Controller
+class MahasiswaController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,50 +15,32 @@ class AuthController extends Controller
      */
     public function index()
     {
-        //
+        return view('mahasiswa/mahasiswa');
     }
 
-    public function login(Request $request)
+    public function paketAktif($nim)
     {
-        $username = $request->username;
-        $password = $request->password;
-
-        $response = Http::asForm()->post("http://localhost:8001/api/auth/login",[
-            'username'=>$username,
-            'password'=>$password
-        ]);
-
-        $resp = json_decode($response);
-        if($response->status() == 500){
-            return response()->json(['error'=>'Internal Server Error'], 500);
-        }else if($response == null || $response->status() == 400){
-            return response()->json(['error'=>'Unauthorized'],401);
-        }
-
-        $me = Http::get("http://localhost:8001/api/auth/me?token=".$resp->access_token);
-        $user = json_decode($me);
-        // dd($user);
-        if($user->role==1){
-            // Auth::login($user);
-            $request->session()->put("nama", $user->nama);
-            $request->session()->put("username", $user->username);
-            $request->session()->put("role", $user->role);
-
-            $request->session()->regenerate();
-            $resp = $request->session()->all();
-            return redirect("/home");
-        }else{
-            return redirect("/");
-        }
+        $response = Http::get("http://localhost:8001/api/student/show/$nim");
+        
 
     }
 
-    public function logout(Request $request)
+    public function detailPaket($id)
     {
+        $respon = Http::get("http://localhost:8001/api/packages/$id");
+        $resp = json_decode($respon);
+        // dd($resp);
 
-        $request->session()->invalidate();
+        $response = Http::get("http://localhost:8001/api/mbkms/$id");
+        $data = json_decode($response);
+        // $data = $data->data;
+        // dd($data);
 
-        return redirect('/');
+        return view('mahasiswa/detailpaketmahasiswa',['id'=>$id , 'data'=>$data, 'resp'=>$resp['0']]);
+    }
+    public function pilihPaket()
+    {
+        return view('mahasiswa/pilihpaket');
     }
 
     /**
@@ -80,6 +62,23 @@ class AuthController extends Controller
     public function store(Request $request)
     {
         //
+        $package = $request->package_id;
+        $nama = $request->nama;
+        $nim = $request->nim;
+
+        $response = Http::asForm()->post("http://localhost:8001/api/student/store",[
+            'package_id'=>$package,
+            'nim'=>$nim,
+            'nama_mahasiswa'=>$nama
+        ]);
+
+        $resp = json_decode($response);
+        if($response->status() == 500){
+            return response()->json(['error'=>'Internal Server Error'], 500);
+        }else if($response == null || $response->status() == 400){
+            return response()->json(['error'=>'Unauthorized'],401);
+        }
+        return Redirect::back();
     }
 
     /**

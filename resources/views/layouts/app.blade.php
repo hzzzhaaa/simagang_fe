@@ -94,7 +94,7 @@
                         </a>
                             {{-- @if (session('role')==1) --}}
                             <div class="garis"></div>
-                            <a class="nav-link  {{ request()->routeIs('home') ? 'active' : '' }}" href="/home">
+                            <a class="nav-link  {{ request()->routeIs('user') ? 'active' : '' }}" href="/user">
                                 <div class="sb-nav-link-icon"><img src="/img/user.png" alt="" style="font-size: 24px;"></div>
                                 User Profile
                             </a>
